@@ -11,26 +11,18 @@ class CameraServiceMock extends Mock implements CameraService {}
 
 void main() {
   late CameraBloc controller;
-  late CameraService service;
+  late CameraServiceMock service;
   late Function(String value) onFile;
   setUp(() {
     onFile = (value) {};
     service = CameraServiceMock();
-    controller = CameraBloc(
-        service: service,
-        onPath: onFile,
-        cameraSide: CameraSide.all,
-        flashModes: [FlashMode.off]);
+    controller = CameraBloc(service: service, onPath: onFile, cameraSide: CameraSide.all, flashModes: [FlashMode.off]);
   });
 
   group("Test CameraBloc", () {
     test("Get AvailableCameras - success", () {
-      when(service).calls(#getCameras).thenReturn((_) => Future.value([
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back)
-          ]));
+      when(service.getCameras).thenAnswer((_) => Future.value(
+          [CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back)]));
       controller.getAvailableCameras();
       controller.statusStream.listen(print);
       expectLater(
@@ -42,7 +34,7 @@ void main() {
     });
 
     test("Get AvailableCameras - failure", () {
-      when(service).calls(#getCameras).thenThrow(CameraException("0", "error"));
+      when(service.getCameras).thenThrow(CameraException("0", "error"));
       controller.getAvailableCameras();
 
       expectLater(
@@ -53,12 +45,8 @@ void main() {
     });
 
     test("changeCamera when status is CameraStatusSuccess", () async {
-      when(service).calls(#getCameras).thenAnswer((_) => Future.value([
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back)
-          ]));
+      when(service.getCameras).thenAnswer((_) => Future.value(
+          [CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back)]));
       controller.getAvailableCameras();
       controller.statusStream.listen((state) => state.when(
           success: (_) {
@@ -72,19 +60,13 @@ void main() {
             isInstanceOf<CameraStatusSuccess>(),
             isInstanceOf<CameraStatusSelected>(),
           ]));
-      expect(controller.status.selected.indexSelected, 1);
+      expect(controller.status.selected.indexSelected, 0);
     });
 
     test("changeCamera for next camera", () async {
-      when(service).calls(#getCameras).thenAnswer((_) => Future.value([
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back),
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back)
+      when(service.getCameras).thenAnswer((_) => Future.value([
+            CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back),
+            CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back)
           ]));
       controller.getAvailableCameras();
       controller.statusStream.listen((state) => state.when(
@@ -106,15 +88,9 @@ void main() {
     });
 
     test("changeCamera for next camera and return index 0", () async {
-      when(service).calls(#getCameras).thenAnswer((_) => Future.value([
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back),
-            CameraDescription(
-                name: "teste",
-                sensorOrientation: 0,
-                lensDirection: CameraLensDirection.back)
+      when(service.getCameras).thenAnswer((_) => Future.value([
+            CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back),
+            CameraDescription(name: "teste", sensorOrientation: 0, lensDirection: CameraLensDirection.back)
           ]));
       controller.getAvailableCameras();
       controller.statusStream.listen((state) => state.when(
